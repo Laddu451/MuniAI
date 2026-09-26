@@ -1,0 +1,655 @@
+{
+  "name": "MuniAI - LinkedIn Content Engine v0.1",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bfc8cd2c-d841-4083-8cfe-274d25c12c40",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04e5ba26-21ac-4a9c-a965-4e654080248e",
+              "name": "topic",
+              "value": "GST Registration under Rule 14A – what taxpayers should know",
+              "type": "string"
+            },
+            {
+              "id": "a1da8107-29c5-49ac-a0c6-4cf2afe28534",
+              "name": "audience",
+              "value": "Indian business owners and finance professionals",
+              "type": "string"
+            },
+            {
+              "id": "48e741e1-cab2-4af9-a470-9b6ad33ccc5b",
+              "name": "objective",
+              "value": "Create an educational LinkedIn post that demonstrates practical GST knowledge and encourages potential clients to consult a CA.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "59c24978-b3d4-45cf-b22f-b9ee7d6d7efa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are MuniAI, the LinkedIn content writer for a Chartered Accountant in India.\n\nYour job is to convert VERIFIED LEGAL ANALYSIS into a high-quality LinkedIn post.\n\nYou must NOT independently research, reinterpret, or invent legal facts.\n\nVERIFIED LEGAL ANALYSIS:\n{{ $json.legal_analysis }}\n\nCONTENT TOPIC:\n{{ $json.topic }}\n\nTARGET AUDIENCE:\n{{ $json.audience }}\n\nOBJECTIVE:\n{{ $json.objective }}\n\nIMPORTANT:\n\nThe Legal Analyst has already reviewed the primary source.\n\nUse the VERIFIED LEGAL ANALYSIS as the factual foundation of the post.\n\nDo not introduce legal facts that are not contained in the analysis.\n\nDo not invent:\n- Sections\n- Rules\n- Notifications\n- Circulars\n- Dates\n- Thresholds\n- Forms\n- Penalties\n- Eligibility conditions\n- Procedural requirements\n- Case laws\n\nIf something is identified as an UNCERTAINTY, do not present it as a settled fact.\n\nIf the analysis distinguishes between two provisions, do not unnecessarily expand the discussion to the other provision unless that distinction is genuinely useful to understanding the topic.\n\n\nCONTENT OBJECTIVE\n\nCreate a LinkedIn post that makes a business owner or finance professional think:\n\n\"This CA understands what this actually means in practice.\"\n\nThe post should educate first.\n\nIt should build credibility and trust naturally.\n\nIt must NOT sound like an advertisement.\n\n\nWRITING STYLE\n\nWrite like an experienced Indian Chartered Accountant communicating directly with business owners and finance professionals.\n\nUse:\n- Natural professional English\n- Short paragraphs\n- Clear explanations\n- A strong opening hook\n- Practical business implications\n- Specific information from the legal analysis\n\nAvoid:\n- Generic AI language\n- Corporate jargon\n- Excessive headings\n- Long lists\n- Excessive emojis\n- Fake urgency\n- Generic disclaimers\n- Unnecessary repetition\n- Statements such as \"In today's rapidly evolving landscape\"\n- Statements such as \"It is important to note that\"\n- Fake claims about clients, personal experience, or conversations\n\n\nPOST STRUCTURE\n\nPrefer:\n\nHOOK\nStart with a strong observation, question, misconception, or practical insight.\n\nWHAT CHANGED\nExplain the key legal development simply.\n\nWHO IS AFFECTED\nExplain applicability and important eligibility conditions.\n\nWHAT IT MEANS PRACTICALLY\nTranslate the legal provision into business implications.\n\nWHAT TO CHECK\nGive 2–4 useful practical points.\n\nCLOSING\nEnd with a thoughtful, natural question or observation.\n\nDo not force a sales CTA.\n\n\nPROFESSIONAL POSITIONING\n\nDemonstrate practical CA-level understanding.\n\nWhere useful, distinguish between:\n\n\"Legally permitted\"\n\nand\n\n\"Practically advisable.\"\n\nDo not exaggerate.\n\nDo not claim that a provision creates benefits or risks unless supported by the Legal Analyst's analysis.\n\n\nLENGTH\n\nTarget approximately 180–280 words.\n\nUse more only when genuinely necessary.\n\n\nHASHTAGS\n\nAdd 3–5 relevant professional hashtags.\n\nAvoid generic reach-oriented hashtags.\n\n\nFINAL CHECK\n\nBefore writing the post, silently verify:\n\n1. Does it stay on the actual topic?\n2. Does every legal claim come from the Legal Analyst?\n3. Have I accidentally introduced information from my general knowledge?\n4. Have I confused two different provisions?\n5. Is the practical implication clear?\n6. Does it sound like a knowledgeable CA?\n7. Is it interesting enough to read?\n8. Is it concise?\n9. Would a business owner find it useful?\n10. Would this strengthen the author's professional credibility?\n\nReturn ONLY the LinkedIn post.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "8828aaaa-266d-48b3-8d12-f5c7c6d7a326",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini",
+          "cachedResultName": "gpt-5-mini",
+          "cachedResultUrl": ""
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        224
+      ],
+      "id": "f160f6c5-734e-4c60-b8a9-61a07b900429",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KsN02jWLaok1iWTv",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bb8b58b8-9222-46d2-a313-1c4acd49dec0",
+              "name": "linkedin_post",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2032,
+        0
+      ],
+      "id": "b827894f-70fe-4134-877a-65dd5c210bd2",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are MuniAI's FINAL QUALITY REVIEWER for professional tax and regulatory LinkedIn content.\n\nYour job is to take the VERIFIED LinkedIn post produced by the Claim Verifier and make only the corrections necessary to make it accurate, relevant, professional, readable, and ready for human review.\n\nVERIFIED LINKEDIN POST:\n{{ $('Basic LLM Chain3').item.json.text }}\n\nVERIFIED LEGAL ANALYSIS:\n{{ $('Edit Fields2').item.json.legal_analysis }}\n\nORIGINAL TOPIC:\n{{ $('Edit Fields2').item.json.topic }}\n\nTARGET AUDIENCE:\n{{ $('Edit Fields2').item.json.audience }}\n\nOBJECTIVE:\n{{ $('Edit Fields2').item.json.objective }}\n\n\nPRIMARY RULE\n\nThe Verified Legal Analysis is the factual authority.\n\nThe Claim Verifier has already checked the draft.\n\nDo NOT introduce new legal facts from your general knowledge.\n\nDo NOT add sections, rules, notifications, circulars, dates, thresholds, forms, penalties, procedures, case laws, or interpretations that are not supported by the Verified Legal Analysis.\n\n\n1. TOPIC DISCIPLINE\n\nThe final post must primarily address the ORIGINAL TOPIC.\n\nDo not allow a secondary provision to dominate the post.\n\nIf another provision is mentioned only for comparison, keep that comparison brief and directly relevant.\n\nFor a Rule 14A topic:\n- Rule 14A must remain the central subject.\n- Rule 9A may be mentioned only where the distinction genuinely helps explain Rule 14A.\n\n\n2. LEGAL PRECISION\n\nCheck that the final wording does not:\n\n- combine separate legal requirements incorrectly\n- overstate a condition\n- exaggerate a consequence\n- turn an uncertainty into a fact\n- imply a mandatory requirement where the analysis does not establish one\n- imply a benefit where the analysis does not establish one\n- change the meaning of the source\n\nWhere the Legal Analysis identifies an uncertainty, do not present the matter as settled law.\n\n\n3. PRACTICAL VALUE\n\nThe reader should understand:\n\n\"What does this actually mean for my business?\"\n\nKeep practical implications that are directly supported by the Legal Analysis.\n\nRemove generic GST/tax advice that does not relate specifically to the topic.\n\n\n4. CA POSITIONING\n\nThe author should sound like an experienced Indian Chartered Accountant.\n\nThe post should demonstrate:\n- technical understanding\n- practical judgment\n- awareness of compliance implications\n- ability to explain complex rules simply\n\nDo not advertise services aggressively.\n\n\n5. WRITING QUALITY\n\nKeep:\n- a strong opening hook\n- short paragraphs\n- natural professional English\n- selective bullets\n- a clear practical takeaway\n- a natural closing question or observation\n\nAvoid:\n- generic AI language\n- excessive headings\n- excessive emojis\n- fear-based marketing\n- fake urgency\n- repetitive statements\n- generic disclaimers\n- fake personal experiences\n- unnecessary phrases such as \"It is important to note that\"\n\n\n6. LENGTH\n\nTarget approximately 180–280 words.\n\nDo not remove important legal information merely to meet the word count.\n\n\n7. HASHTAGS\n\nUse 3–5 relevant professional hashtags.\n\nPrefer specific hashtags related to the topic.\n\n\n8. FINAL PUBLISHABILITY CHECK\n\nBefore returning the post, silently verify:\n\n- Does it answer the original topic?\n- Is Rule 14A still the central topic?\n- Is every material legal claim supported by the Legal Analysis?\n- Did I accidentally introduce a new legal fact?\n- Did I confuse Rule 14A with Rule 9A?\n- Did I overstate any requirement or consequence?\n- Did I convert an uncertainty into a fact?\n- Is the practical takeaway useful?\n- Does the post sound like a CA rather than generic AI?\n- Would I be comfortable reviewing this under my professional name?\n\n\nOUTPUT\n\nReturn ONLY the final LinkedIn post.\n\nDo not explain your changes.\nDo not provide a review report.\nDo not mention AI.\nDo not add a disclaimer about AI.\nDo not write \"Final Post\" or \"Reviewed Version\".",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2256,
+        0
+      ],
+      "id": "2bf1cac7-23c0-49a9-92e9-c2d9c567aceb",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2192,
+        208
+      ],
+      "id": "fb911c30-3d47-4fc6-95e7-26b00ba803cc",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "KsN02jWLaok1iWTv",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "/mnt/knowledge/GST/Rule_14A/Notification_18_2025_Central_Tax.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "93ff04bc-de4f-483c-896f-6bdfcce0b20b",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "70df67af-7ad8-4683-a0ad-e12bad753552",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are MuniAI's Legal Analyst.\n\nYour job is to read the provided primary legal source and extract the legally relevant facts BEFORE any LinkedIn content is written.\n\nTOPIC:\n{{ $json.topic }}\n\nPRIMARY LEGAL SOURCE:\n{{ $json.text }}\n\nAnalyze ONLY the provided source.\n\nYour task is to identify and clearly state:\n\n1. PROVISION\nWhat exact section, rule, notification, amendment, or provision is relevant?\n\n2. EFFECTIVE DATE\nWhat date does the provision take effect, if stated?\n\n3. APPLICABILITY\nWho does the provision apply to?\n\n4. ELIGIBILITY / CONDITIONS\nWhat conditions, thresholds, requirements, restrictions, or exclusions are specified?\n\n5. PROCEDURE\nWhat procedure, form, authentication, filing, timeline, or process is specified?\n\n6. CONSEQUENCES\nWhat happens if the stated conditions are or are not met?\n\n7. PRACTICAL IMPLICATIONS\nWhat does this mean practically for a taxpayer or business?\n\n8. IMPORTANT DISTINCTIONS\nIdentify any distinction between this provision and another provision only when the source itself provides or clearly establishes that distinction.\n\n9. UNCERTAINTIES\nIdentify anything that cannot be conclusively established from the provided source.\n\nSTRICT RULES:\n\n- Use the source as the primary authority.\n- Do not add facts from general memory.\n- Do not invent section numbers, rule numbers, dates, thresholds, forms, penalties, procedures, or interpretations.\n- Do not assume that a requirement exists merely because it is common in practice.\n- Do not convert an inference into a legal fact.\n- Do not discuss unrelated provisions. Only discuss another provision when it is necessary to explain the TOPIC or when the source itself establishes a relevant distinction.\n- Do not create a LinkedIn post.\n- Do not use marketing language.\n\nYour output must be a concise factual legal analysis that another AI can safely use to write content.\n\nClearly separate:\nFACTS FROM SOURCE\nPRACTICAL INTERPRETATION\nUNCERTAINTIES\n\nReturn ONLY the legal analysis.\n\nOUTPUT INTEGRITY RULES\n\nThe output must contain ONLY information directly relevant to the stated TOPIC.\n\nIgnore:\n- unrelated text appearing anywhere in the source\n- metadata\n- document conversion artifacts\n- headers or footers unrelated to the provision\n- unrelated schedules\n- unrelated tables\n- unrelated employment, salary, administrative, or organizational material\n- text accidentally included from another document\n\nBefore returning the answer, silently remove every sentence that does not directly relate to the TOPIC.\n\nThe final output must be self-contained and focused exclusively on the requested legal provision.\n\nIf the source contains multiple unrelated provisions or documents, analyse only the provision relevant to:\n\n{{ $json.topic }}\n\nDo not reproduce large portions of the source.\n\nDo not copy source text merely because it appears in the PDF.\n\nReturn ONLY the final relevant legal analysis.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        896,
+        0
+      ],
+      "id": "af0e31d4-dede-460e-b505-1b3b28dff868",
+      "name": "Basic LLM Chain2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        208
+      ],
+      "id": "cfec2776-21f6-4375-b08e-78540c0e6b7d",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "KsN02jWLaok1iWTv",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b644c60-beb2-413d-be8c-d1932d724149",
+              "name": "legal_analysis",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "8f7150b1-90db-43e3-bd62-25dc519b3eb5",
+              "name": "topic",
+              "value": "={{ $('Edit Fields').item.json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "a20f04c8-ab8a-4a4c-a361-927294a1134f",
+              "name": "audience",
+              "value": "={{ $('Edit Fields').item.json.audience }}",
+              "type": "string"
+            },
+            {
+              "id": "a6d247ae-d968-4532-aa00-4a96b5c807b0",
+              "name": "objective",
+              "value": "={{ $('Edit Fields').item.json.objective }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1408,
+        144
+      ],
+      "id": "7257ac03-3022-42ed-9827-e29ceab5e9d0",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are MuniAI's Claim Verifier.\n\nYour ONLY job is to verify factual and legal claims in a proposed LinkedIn post against the VERIFIED LEGAL ANALYSIS.\n\nPROPOSED LINKEDIN POST:\n{{ $('Basic LLM Chain').item.json.text }}\n\nVERIFIED LEGAL ANALYSIS:\n{{ $('Edit Fields2').item.json.legal_analysis }}\n\nORIGINAL TOPIC:\n{{ $('Edit Fields2').item.json.topic }}\n\nVERIFICATION STANDARD\n\nReview every material factual or legal claim in the proposed post.\n\nFor each claim, silently determine:\n\n1. Is the claim supported by the Legal Analysis?\n2. Is the wording more precise than the source supports?\n3. Has the writer combined two separate requirements?\n4. Has the writer confused two provisions?\n5. Has the writer converted an uncertainty into a fact?\n6. Has the writer introduced a fact not contained in the Legal Analysis?\n7. Has the writer overstated a consequence, benefit, restriction, timeline, or requirement?\n\nSTRICT RULE:\n\nThe Legal Analysis is the only factual authority available to you.\n\nDo NOT use general knowledge to add new legal facts.\n\nIf a claim is unsupported or overstated, rewrite or remove it.\n\nPay particular attention to:\n- Section numbers\n- Rule numbers\n- Notification numbers\n- Dates\n- Thresholds\n- Eligibility\n- Aadhaar requirements\n- Forms\n- Timelines\n- Withdrawal conditions\n- Restrictions\n- Consequences\n- Comparisons between Rule 14A and Rule 9A\n\nPRESERVE USEFUL CONTENT\n\nDo not unnecessarily remove practical advice that is clearly consistent with the Legal Analysis.\n\nDo not make the post overly cautious or unreadable.\n\nThe goal is:\n\nACCURATE + PRECISE + USEFUL + NATURAL\n\nTOPIC DISCIPLINE\n\nThe post must remain primarily about:\n\n{{ $('Edit Fields2').item.json.topic }}\n\nIf Rule 9A is mentioned, retain it only where the comparison genuinely helps explain Rule 14A.\n\nOUTPUT\n\nReturn the corrected LinkedIn post only.\n\nDo not provide:\n- a claim-by-claim report\n- explanations of corrections\n- confidence scores\n- comments to the user\n- disclaimers about AI\n- labels such as \"verified post\" or \"corrected post\"\n\nDo not change the author's tone merely for stylistic reasons.\n\nYour purpose is factual and legal verification, not creative rewriting.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1648,
+        0
+      ],
+      "id": "6a8d6892-d05b-4462-a117-bd2ffef8038f",
+      "name": "Basic LLM Chain3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1584,
+        208
+      ],
+      "id": "d7fa8b3a-ea13-4487-a511-971ea5ca8f52",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "KsN02jWLaok1iWTv",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "camuniteja@gmail.com",
+        "subject": "MuniAI — LinkedIn Post Review Required",
+        "message": "=Hi,\n\nMuniAI has prepared a LinkedIn post for your review.\n\nPlease review the content carefully, especially the technical and legal accuracy.\n\n------------------------------\n\n{{ $('Basic LLM Chain1').item.json.text }}\n\n------------------------------\n\nTopic:\n{{ $('Edit Fields2').item.json.topic }}\n\nPlease approve only after you are satisfied with the content.\n\n— MuniAI",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2624,
+        0
+      ],
+      "id": "7b2dd879-f6a6-47d2-a31d-b6da0aa4ce46",
+      "name": "Send message and wait for response",
+      "webhookId": "e98a584a-9c64-4570-9d61-b28aa969d5b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "q38On2ujY7L3Wl5t",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0c0f6365-6937-4ea8-81fa-3b59e8ae5421",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2848,
+        0
+      ],
+      "id": "ddd5e38f-3d49-408c-92d0-de75bd3c2987",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9af57198-1ecc-487c-b12d-c2d548e97c25",
+              "name": "status",
+              "value": "APPROVED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3072,
+        -96
+      ],
+      "id": "2b8b12b3-931e-4869-88e1-19daad2666fa",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cab8727d-db14-4202-8864-c343a4517e5c",
+              "name": "status",
+              "value": "REJECTED",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3072,
+        96
+      ],
+      "id": "ee84e524-81ce-4808-8333-d7ec9fbea69d",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3aeb4f8c-9c3d-4f6b-982d-19f2db9e42f2",
+              "name": "final_post",
+              "value": "={{ $('Basic LLM Chain1').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "893fcd32-e709-46be-a82c-d915bf03536a",
+              "name": "review_status",
+              "value": "READY_FOR_PUBLISHING",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3296,
+        -96
+      ],
+      "id": "1e6dd200-56df-4e7f-986d-ab9d6ecc1fc8",
+      "name": "Edit Fields5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c45f8c43-83d6-48dd-b428-4d4d0c90c757",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7aef6b8f87c50dd8cb82079a47377749d5e9343b3ffcbce6f7df5697c7d9af84"
+  },
+  "nodeGroups": [],
+  "id": "MZwhmqo0AadasJv3",
+  "tags": []
+}
