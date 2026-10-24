@@ -1,0 +1,551 @@
+{
+  "name": "MuniAI - GST Topic Selector v1.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "190f8669-0851-410b-b17b-d2a050e58dab",
+      "name": "Select GST Topic"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "49d1f1f2-0d02-40cb-b574-f6061dd98333",
+              "name": "topic_id",
+              "value": "GST-001",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        288,
+        0
+      ],
+      "id": "5ce4f461-74db-4dcc-bba2-c80fd5fb2253",
+      "name": "Choose GST Topic"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    topic_id,\n    topic_title,\n    topic_type,\n    source_pages,\n    case_or_reference,\n    court_or_authority,\n    legal_provisions,\n    core_issue,\n    key_facts,\n    decision_or_development,\n    practical_significance,\n    source_summary\nFROM gst_source_topics\nWHERE topic_id = '{{ $json.query.topic_id }}'\n  AND status = 'AVAILABLE';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        560,
+        0
+      ],
+      "id": "8b43a221-2937-46a1-b5c2-ec1dce09211a",
+      "name": "Get Selected GST Topic",
+      "credentials": {
+        "postgres": {
+          "id": "2v63qDu1NbfRWkvX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the GST Research Agent for MuniAI.\n\nYour job is to prepare a research brief for the selected GST topic.\n\nIMPORTANT:\nThis is NOT a LinkedIn writing task.\n\nThe source document is the starting point, but the final content must NOT simply reproduce or paraphrase the source article.\n\nYour research brief must identify:\n\n1. What is the exact legal issue?\n2. What statutory provisions are involved?\n3. What case / notification / circular / authority is involved?\n4. What exactly was decided or observed?\n5. Is the matter final, interim, stayed, pending, or subject to conflicting judicial views?\n6. Are there important exceptions, provisos, jurisdictional limitations or factual limitations?\n7. What practical implications can reasonably be drawn?\n8. Which parts require verification from primary/current sources before publication?\n9. What should NOT be stated as a universal proposition?\n\nSOURCE TOPIC:\n\nTopic ID:\n{{ $json.topic_id }}\n\nTopic:\n{{ $json.topic_title }}\n\nTopic Type:\n{{ $json.topic_type }}\n\nSource Pages:\n{{ $json.source_pages }}\n\nCase / Reference:\n{{ $json.case_or_reference }}\n\nCourt / Authority:\n{{ $json.court_or_authority }}\n\nLegal Provisions:\n{{ JSON.stringify($json.legal_provisions) }}\n\nCore Issue:\n{{ $json.core_issue }}\n\nKey Facts:\n{{ $json.key_facts }}\n\nDecision / Development:\n{{ $json.decision_or_development }}\n\nPractical Significance:\n{{ $json.practical_significance }}\n\nSource Summary:\n{{ $json.source_summary }}\n\nRESEARCH RULES:\n\n- Treat the source topic as research input, not as the final answer.\n- Do not invent facts, holdings, dates, provisions or procedural requirements.\n- Do not strengthen the court's observation into a broader legal rule.\n- Clearly distinguish final judgments from interim orders, observations, stays and pending proceedings.\n- Identify jurisdictional limitations.\n- Identify conflicting judicial views where the source indicates them.\n- Do not assume that a practical recommendation is a statutory requirement.\n- Do not create a LinkedIn post.\n- Do not use promotional language.\n- Preserve legal uncertainty where it exists.\n\nReturn a structured research brief with these headings:\n\nLEGAL ISSUE\nSTATUTORY FRAMEWORK\nCASE / AUTHORITY\nKEY FACTS\nHOLDING / DEVELOPMENT\nLIMITATIONS AND UNCERTAINTIES\nPRACTICAL IMPLICATIONS\nPOINTS REQUIRING PRIMARY-SOURCE VERIFICATION\nCLAIMS TO AVOID\nCONTENT ANGLE\n\nAt the end, provide:\n\nRESEARCH_STATUS:\nSOURCE_BASED_REVIEW",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2704,
+        464
+      ],
+      "id": "5feafddd-0339-4995-ad9c-c90133cc8960",
+      "name": "GST Research Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2528,
+        608
+      ],
+      "id": "85f35653-d167-4707-a15e-77e256b17b21",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XIkNxwCPf2PcN6Ar",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const research = $json.text;\n\nif (!research) {\n  throw new Error('GST Research Agent returned no research brief.');\n}\n\nconst topicId = $('Get Selected GST Topic').item.json.topic_id;\nconst topicTitle = $('Get Selected GST Topic').item.json.topic_title;\nconst caseReference = $('Get Selected GST Topic').item.json.case_or_reference;\nconst court = $('Get Selected GST Topic').item.json.court_or_authority;\n\nreturn [{\n  json: {\n    topic_id: topicId,\n    topic_title: topicTitle,\n    case_or_reference: caseReference,\n    court_or_authority: court,\n\n    verification_queries: [\n      `\"${caseReference}\" judgment`,\n      `\"${caseReference}\" \"${court}\"`,\n      `\"${caseReference}\" Supreme Court appeal`,\n      `\"${caseReference}\" review SLP`,\n      `\"${topicTitle}\" GST`\n    ],\n\n    research_brief: research,\n\n    verification_instruction:\n      'Verify the legal position against primary sources wherever possible. ' +\n      'Prioritise court judgments/orders, official legislation, CBIC notifications/circulars, ' +\n      'and official government sources. Do not treat secondary articles as proof of a legal holding.'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        32
+      ],
+      "id": "bd95c98c-ef79-48ac-9166-64e3687e1beb",
+      "name": "Build GST Verification Queries"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "cssSelector": "a",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3280,
+        32
+      ],
+      "id": "7066954a-460b-430a-b98d-43275b03ceaf",
+      "name": "Extract GST Search Results"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "verification_queries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        32
+      ],
+      "id": "ad993279-1bd1-4115-97a9-dbed2de5e06a",
+      "name": "Split Verification Queries"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3304ef7-b330-4fe1-8aba-ca22394e34a2",
+              "name": "query",
+              "value": "={{ $json.verification_queries }}",
+              "type": "string"
+            },
+            {
+              "id": "17f63eed-0801-475c-a7bc-17218054260b",
+              "name": "source_priority",
+              "value": "PRIMARY",
+              "type": "string"
+            },
+            {
+              "id": "c736ccdd-5084-4a5c-bd14-8ded248aa69a",
+              "name": "allowed_sources",
+              "value": "Supreme Court of India, High Courts of India, CBIC, GST Portal, India Code",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2784,
+        32
+      ],
+      "id": "3670a91a-2d5b-4295-8183-f4e6c7affc51",
+      "name": "Prepare Source Search"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $json.query;\n\nreturn [{\n  json: {\n    query,\n\n    source_urls: [\n      `https://www.sci.gov.in/`,\n      `https://orissahighcourt.nic.in/`,\n      `https://www.cbic.gov.in/`,\n      `https://www.gst.gov.in/`,\n      `https://www.indiacode.nic.in/`\n    ],\n\n    source_priority: 'PRIMARY'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3008,
+        32
+      ],
+      "id": "707453ae-9598-448c-a62f-44160467838c",
+      "name": "Build Primary Source URLs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "531f1864-9b03-40a2-8499-dfafec16e560",
+              "name": "topic",
+              "value": "={{ $json.topic_title }}",
+              "type": "string"
+            },
+            {
+              "id": "64ad0946-dd1d-4b26-ba8d-bc0c972e6bc7",
+              "name": "topic_id",
+              "value": "={{ $json.topic_id }}",
+              "type": "string"
+            },
+            {
+              "id": "cbebc7eb-2667-4bee-b70c-30ba4a2c7da1",
+              "name": "legal_analysis",
+              "value": "={{ $json.source_summary }}",
+              "type": "string"
+            },
+            {
+              "id": "8bad6aa5-ddd9-4680-8c0c-3f057aa263a2",
+              "name": "audience",
+              "value": "Business owners, finance teams and tax professionals",
+              "type": "string"
+            },
+            {
+              "id": "f3adb41a-8381-4648-872e-841704793321",
+              "name": "objective",
+              "value": "Create an original professional LinkedIn post explaining the selected GST topic and its practical implications.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "371370c7-661c-4751-9375-affbed7bb238",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZPdB2wZ1wTVas2k2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ZPdB2wZ1wTVas2k2",
+          "cachedResultName": "MuniAI - LinkedIn Content Engine v0.1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "e18eab35-49b2-4afa-86fc-7151d40534cd",
+      "name": "Call 'MuniAI - LinkedIn Content Engine v0.1'"
+    },
+    {
+      "parameters": {
+        "path": "gst-topic-selector",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        368
+      ],
+      "id": "f14aeadf-37fe-490e-b11b-e271794cb9b4",
+      "name": "Webhook",
+      "webhookId": "0a4cd16b-26f4-4fd3-9c72-c75d5a166a79"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    topic_id,\n    topic_title\nFROM gst_source_topics\nWHERE status = 'AVAILABLE'\nORDER BY topic_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        688,
+        512
+      ],
+      "id": "78ab396d-d993-4c00-9f8b-d30fcbf77a69",
+      "name": "Get Available GST Topics",
+      "credentials": {
+        "postgres": {
+          "id": "2v63qDu1NbfRWkvX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const topics = $input.all();\n\nconst options = topics.map(item => {\n  const id = item.json.topic_id;\n  const title = item.json.topic_title;\n\n  return `\n    <a href=\"/webhook/gst-topic-selector?topic_id=${encodeURIComponent(id)}\"\n       style=\"display:block;padding:14px;margin:10px 0;\n              border:1px solid #ddd;border-radius:8px;\n              text-decoration:none;color:#222;\">\n      <strong>${id}</strong> — ${title}\n    </a>\n  `;\n}).join('');\n\nreturn [{\n  json: {\n    html: `\n      <!DOCTYPE html>\n      <html>\n      <head>\n        <meta charset=\"UTF-8\">\n        <title>MuniAI GST Topic Selector</title>\n      </head>\n      <body style=\"font-family:Arial;max-width:900px;margin:40px auto;padding:20px;\">\n        <h1>MuniAI — Select GST Topic</h1>\n        <p>Select the topic for which you want to prepare a LinkedIn post.</p>\n        ${options}\n      </body>\n      </html>\n    `\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        512
+      ],
+      "id": "30bc3a08-ab08-47ab-9b46-5c8cc34ec7ea",
+      "name": "Build Topic Selection Page"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1184,
+        512
+      ],
+      "id": "6aa2a223-05ba-4df8-8fbc-5a27ba4100d8",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5959591e-21a0-4b47-b562-e85a4ff50862",
+              "leftValue": "={{ $json.query.topic_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        160,
+        368
+      ],
+      "id": "08f77d26-9e5b-4256-8663-110c80f726c3",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Select GST Topic": {
+      "main": [
+        [
+          {
+            "node": "Choose GST Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Choose GST Topic": {
+      "main": [
+        [
+          {
+            "node": "Get Selected GST Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Selected GST Topic": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GST Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Build GST Verification Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GST Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build GST Verification Queries": {
+      "main": [
+        [
+          {
+            "node": "Split Verification Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Verification Queries": {
+      "main": [
+        [
+          {
+            "node": "Prepare Source Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Source Search": {
+      "main": [
+        [
+          {
+            "node": "Build Primary Source URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Primary Source URLs": {
+      "main": [
+        [
+          {
+            "node": "Extract GST Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'MuniAI - LinkedIn Content Engine v0.1'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Available GST Topics": {
+      "main": [
+        [
+          {
+            "node": "Build Topic Selection Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Topic Selection Page": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Selected GST Topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Available GST Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c9f07fdb-c91f-4da2-8e24-d241a1be085e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ca401b53b1a575b3cca814ab010547ec2cc97a077d3487272c344c5522c79ca"
+  },
+  "nodeGroups": [],
+  "id": "0QHV7ZnoU7GiBFaa",
+  "tags": []
+}

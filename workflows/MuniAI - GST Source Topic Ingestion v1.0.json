@@ -1,0 +1,221 @@
+{
+  "name": "MuniAI - GST Source Topic Ingestion v1.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5b2ca719-9616-4bb8-b4fb-1ea5179b0477",
+      "name": "Start GST Source Ingestion"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "ebe1287b-397c-47f0-91f5-06df92c3e4d5",
+      "name": "Extract PDF Text"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/mnt/knowledge/GST/Sources/The GST Insider 33rd Edition.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "613b9a38-d196-4965-9ee3-da64ec5f1cfb",
+      "name": "Read GST Source PDF"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Topic Extraction Agent for MuniAI.\n\nYour task is to analyse the COMPLETE source document provided below and divide it into distinct, meaningful GST topics.\n\nIMPORTANT:\n- Do NOT write LinkedIn posts.\n- Do NOT rewrite the article.\n- Do NOT invent information.\n- Do NOT add outside knowledge at this stage.\n- Use ONLY information contained in the source document.\n- Preserve the source's legal terminology, case names, provisions and court names.\n- Separate genuinely different legal issues into different topics.\n- Do not create duplicate topics merely because the same issue appears on multiple pages.\n- If one topic spans multiple pages, combine those pages into one topic.\n- Capture the source page numbers wherever they can be identified.\n- The objective is to create a structured Topic Bank that MuniAI can later use for research and original content creation.\n\nFor EACH topic return:\n\n1. topic_title\n2. topic_type\n   Examples:\n   - Case Law\n   - Notification\n   - Circular\n   - Rule / Act Update\n   - Compliance\n   - Procedural\n   - Other\n3. source_pages\n4. case_or_reference\n5. court_or_authority\n6. legal_provisions\n7. core_issue\n8. key_facts\n9. decision_or_development\n10. practical_significance\n11. source_summary\n\nIMPORTANT FOR source_summary:\nSummarise the source faithfully in your own structured form.\nDo not create a LinkedIn-style article.\nDo not introduce conclusions that are not supported by the source.\n\nReturn ONLY valid JSON in this exact structure:\n\n{\n  \"source_document\": \"\",\n  \"topics\": [\n    {\n      \"topic_id\": \"GST-001\",\n      \"topic_title\": \"\",\n      \"topic_type\": \"\",\n      \"source_pages\": \"\",\n      \"case_or_reference\": \"\",\n      \"court_or_authority\": \"\",\n      \"legal_provisions\": [],\n      \"core_issue\": \"\",\n      \"key_facts\": \"\",\n      \"decision_or_development\": \"\",\n      \"practical_significance\": \"\",\n      \"source_summary\": \"\"\n    }\n  ]\n}\n\nSOURCE DOCUMENT:\n{{ $json.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        672,
+        0
+      ],
+      "id": "8e9a0a41-af6c-4834-9ff0-a819205127b2",
+      "name": "GST Topic Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        208
+      ],
+      "id": "f176795a-2e2b-4afa-aad7-8aa7b2f0020a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "XIkNxwCPf2PcN6Ar",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.text;\n\nif (!raw) {\n  throw new Error('GST Topic Extractor returned no text.');\n}\n\nlet cleaned = String(raw).trim();\n\n// Remove markdown JSON fences if the model adds them\ncleaned = cleaned\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/\\s*```$/i, '')\n  .trim();\n\nlet parsed;\n\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (error) {\n  throw new Error(\n    'GST Topic Extractor did not return valid JSON. Output was:\\n' + cleaned\n  );\n}\n\nif (!Array.isArray(parsed.topics)) {\n  throw new Error('No topics array found in GST Topic Extractor output.');\n}\n\nreturn parsed.topics.map(topic => ({\n  json: {\n    source_document: parsed.source_document || 'The GST Insider 33rd Edition.pdf',\n    topic_id: topic.topic_id,\n    topic_title: topic.topic_title,\n    topic_type: topic.topic_type,\n    source_pages: topic.source_pages,\n    case_or_reference: topic.case_or_reference,\n    court_or_authority: topic.court_or_authority,\n    legal_provisions: topic.legal_provisions || [],\n    core_issue: topic.core_issue,\n    key_facts: topic.key_facts,\n    decision_or_development: topic.decision_or_development,\n    practical_significance: topic.practical_significance,\n    source_summary: topic.source_summary,\n    status: 'AVAILABLE'\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "21592c03-452e-4c7f-afbc-0f6ce2c14188",
+      "name": "Parse GST Topics"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS gst_source_topics (\n    id SERIAL PRIMARY KEY,\n\n    topic_id TEXT NOT NULL UNIQUE,\n    source_document TEXT NOT NULL,\n\n    topic_title TEXT NOT NULL,\n    topic_type TEXT,\n\n    source_pages TEXT,\n    case_or_reference TEXT,\n    court_or_authority TEXT,\n\n    legal_provisions JSONB,\n\n    core_issue TEXT,\n    key_facts TEXT,\n    decision_or_development TEXT,\n    practical_significance TEXT,\n    source_summary TEXT,\n\n    status TEXT DEFAULT 'AVAILABLE',\n\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "9c2e5bab-3a6a-4ab6-ab7e-9fbe68cbdca8",
+      "name": "Create GST Topic Bank",
+      "credentials": {
+        "postgres": {
+          "id": "2v63qDu1NbfRWkvX",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO gst_source_topics (\n    topic_id,\n    source_document,\n    topic_title,\n    topic_type,\n    source_pages,\n    case_or_reference,\n    court_or_authority,\n    legal_provisions,\n    core_issue,\n    key_facts,\n    decision_or_development,\n    practical_significance,\n    source_summary,\n    status,\n    updated_at\n)\nVALUES (\n    '{{ $json.topic_id }}',\n    '{{ String($json.source_document || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.topic_title || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.topic_type || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.source_pages || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.case_or_reference || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.court_or_authority || \"\").replace(/'/g, \"''\") }}',\n    '{{ JSON.stringify($json.legal_provisions || []).replace(/'/g, \"''\") }}'::jsonb,\n    '{{ String($json.core_issue || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.key_facts || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.decision_or_development || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.practical_significance || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.source_summary || \"\").replace(/'/g, \"''\") }}',\n    '{{ String($json.status || \"AVAILABLE\").replace(/'/g, \"''\") }}',\n    CURRENT_TIMESTAMP\n)\nON CONFLICT (topic_id)\nDO UPDATE SET\n    topic_title = EXCLUDED.topic_title,\n    topic_type = EXCLUDED.topic_type,\n    source_pages = EXCLUDED.source_pages,\n    case_or_reference = EXCLUDED.case_or_reference,\n    court_or_authority = EXCLUDED.court_or_authority,\n    legal_provisions = EXCLUDED.legal_provisions,\n    core_issue = EXCLUDED.core_issue,\n    key_facts = EXCLUDED.key_facts,\n    decision_or_development = EXCLUDED.decision_or_development,\n    practical_significance = EXCLUDED.practical_significance,\n    source_summary = EXCLUDED.source_summary,\n    status = EXCLUDED.status,\n    updated_at = CURRENT_TIMESTAMP;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "3886794a-1249-4baf-8aa5-4e3dcc19a6db",
+      "name": "Store GST Topics",
+      "credentials": {
+        "postgres": {
+          "id": "2v63qDu1NbfRWkvX",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start GST Source Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read GST Source PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read GST Source PDF": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Text": {
+      "main": [
+        [
+          {
+            "node": "GST Topic Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GST Topic Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GST Topic Extractor": {
+      "main": [
+        [
+          {
+            "node": "Parse GST Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse GST Topics": {
+      "main": [
+        [
+          {
+            "node": "Store GST Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9990d4b6-c3ff-4e2b-90e0-f7ed70428a9e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ca401b53b1a575b3cca814ab010547ec2cc97a077d3487272c344c5522c79ca"
+  },
+  "nodeGroups": [],
+  "id": "9jJqJqU8iyj2PhrZ",
+  "tags": []
+}
